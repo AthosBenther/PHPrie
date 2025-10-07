@@ -1,0 +1,13 @@
+{
+    "autoload": {
+        "files": [
+            "PHPrie/helpers/_globals.php"
+        ],
+        "psr-4": {
+            "PHPrie\\": "PHPrie/"
+        }
+    },
+    "require": {
+        "vlucas/phpdotenv": "^5.6"
+    }
+}
