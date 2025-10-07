@@ -4,31 +4,34 @@ namespace PHPrie;
 
 require __DIR__ . '/vendor/autoload.php';
 
+use Dotenv\Dotenv;
 use PHPrie\Routes\Routes;
 use PHPrie\Helpers\Console;
+
+$dotenv = Dotenv::createImmutable(__DIR__);
+$dotenv->load();
 
 $routes = new Routes();
 
 $controller = $argv[1];
-//$params = getArg("p", null, true);
 $fn = getArg("fn");
-//$fnParams = getArg("fnp", null, true);
 
 $params = array_filter(getArg("p", null, true), fn($v) => $v !== '' && $v !== null);
 $fnParams = array_filter(getArg("fnp", null, true), fn($v) => $v !== '' && $v !== null);
 
-// var_dump([
-//     'controller' => $controller,
-//     'params' => $params,
-//     'fn' => $fn,
-//     'fnParams' => $fnParams
-// ]);
-//die();
+dd(env());
+
+dd([
+    'controller' => $controller,
+    'params' => $params,
+    'fn' => $fn,
+    'fnParams' => $fnParams
+]);
 
 try {
     $routes->Get($controller, $params, $fn, $fnParams);
 } catch (\Exception $e) {
-    echo $e->getMessage();
+    Console::log($e->getMessage());
 }
 
 function getArg(string $argName, $default = null, $toArray = false)

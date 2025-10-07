@@ -9,7 +9,7 @@ use PHPrie\Types\Roads\BaseRoads;
 class ArchRoadsController
 {
     public BaseRoads $archRoads;
-    protected $defaultPath = "./roads/arch/archRoads.json";
+    protected $defaultPath = $_ENV['ARCH_ROADS_PATH'] ?? "./archRoads.json";
     public function __construct(public ?string $filePath = null, bool $fixFile = true, bool $backup = true)
     {
         if ($backup) {
@@ -50,7 +50,7 @@ class ArchRoadsController
 
     }
 
-    public function backupFile(string $backupDir = "./roads/arch/bkp/")
+    public function backupFile(string $backupDir = $_ENV['ARCH_ROADS_BACKUP_PATH'] ?? "./backup")
     {
         $file = file_get_contents($this->defaultPath);
         $timestamp = date('Y-m-d-H-i-s');
@@ -87,7 +87,7 @@ class ArchRoadsController
             $psmsRoad['displayName'] = str_replace('PSMS', '', $psmsRoad['displayName']);
         }
 
-        file_put_contents($this->filePath ?? "./roads/arch/archRoads.json", json_encode($data, JSON_PRETTY_PRINT));
+        file_put_contents($this->filePath ?? $this->defaultPath, json_encode($data, JSON_PRETTY_PRINT));
 
         $psmsCount = count($psmsRoads);
         Console::log("Sloped {$psmsCount} roads.");
