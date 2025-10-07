@@ -9,9 +9,10 @@ use PHPrie\Types\Roads\BaseRoads;
 class ArchRoadsController
 {
     public BaseRoads $archRoads;
-    protected $defaultPath = $_ENV['ARCH_ROADS_PATH'] ?? "./archRoads.json";
+    protected $defaultPath = "./archRoads.json";
     public function __construct(public ?string $filePath = null, bool $fixFile = true, bool $backup = true)
     {
+        $this->defaultPath = $_ENV['ARCH_ROADS_PATH'];
         if ($backup) {
             $this->backupFile();
         }
@@ -22,16 +23,20 @@ class ArchRoadsController
 
     }
 
-    public function fixFile(string $path)
+    public function fixFile(?string $path = null)
     {
+        $path ??= $this->filePath ?? $this->defaultPath;
+        if (!file_exists($path)) {
+            throw new \Exception("File not found: " . $path);
+        }
+        
         $content = file_get_contents($path);
 
         //removes invalid characters
         $content = preg_replace('/[^A-Za-z0-9_\- \":.,\[\{\}\]\\\\]/', '', $content);
 
-        //fixes road bojects links
-        $content = str_replace("artshapesobjects", "/art/shapes/objects", $content);
-        $content = str_replace("\\art\\shapes\\objects\\", "/art/shapes/objects", $content);
+        //fixes libraries links
+        $content = $this->fixPaths($content);
 
         $data = json_decode($content, true);
 
@@ -43,22 +48,51 @@ class ArchRoadsController
                 $road['name'] = substr($road['name'], 0, 36);
             }
 
-            file_put_contents($path, json_encode($data, JSON_PRETTY_PRINT));
+            file_put_contents($path, json_encode($data, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES));
         } else {
-            throw new \Exception("File fixing resulted in invalid JSON");
+            file_put_contents("tmp/invalid.json", $content);
+            throw new \Exception("File fixing resulted in invalid JSON. Check 'invalid.json' for details.");
         }
 
     }
 
-    public function backupFile(string $backupDir = $_ENV['ARCH_ROADS_BACKUP_PATH'] ?? "./backup")
+    private function fixPaths(string $content): string
     {
+        $paths = [
+            '/art/shapes/garage_and_dealership/Clutter',
+            '/art/shapes/objects'
+        ];
+
+        foreach ($paths as $path) {
+            $commonErrors = [];
+            $commonErrors[] = str_replace('/', '\\', $path);
+            $commonErrors[] = str_replace('/', '\\\\', $path);
+            $commonErrors[] = str_replace('/', '', $path);
+            foreach ($commonErrors as $err) {
+                $content = str_replace($err, $path, $content);
+            }
+        }
+
+        return $content;
+
+    }
+
+    public function backupFile(?string $backupDir = null)
+    {
+
+        $backupDir ??= $_ENV['ARCH_ROADS_BACKUP_PATH'] ?? "./backup/";
+
+        if (!is_dir($backupDir)) {
+            mkdir($backupDir, 0755, true);
+        }
+
         $file = file_get_contents($this->defaultPath);
         $timestamp = date('Y-m-d-H-i-s');
         $backupName = "{$timestamp}-backup.json";
         file_put_contents($backupDir . $backupName, $file);
     }
 
-    public function genSvg(string $outputPath = "output.svg")
+    public function genSvg(string $outputPath = "tmp/output.svg")
     {
         $svg = $this->archRoads->toSvg();
         file_put_contents($outputPath, $svg);
@@ -93,7 +127,7 @@ class ArchRoadsController
         Console::log("Sloped {$psmsCount} roads.");
     }
 
-    private function pleseSlopeMeSempai(&$road)
+    private function pleseSlopeMeSenpai(&$road)
     {
         $nodes = &$road['nodes'];
         $cNodes = count($nodes);

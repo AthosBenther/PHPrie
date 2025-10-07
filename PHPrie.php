@@ -19,14 +19,12 @@ $fn = getArg("fn");
 $params = array_filter(getArg("p", null, true), fn($v) => $v !== '' && $v !== null);
 $fnParams = array_filter(getArg("fnp", null, true), fn($v) => $v !== '' && $v !== null);
 
-dd(env());
-
-dd([
-    'controller' => $controller,
-    'params' => $params,
-    'fn' => $fn,
-    'fnParams' => $fnParams
-]);
+// dd([
+//     'controller' => $controller,
+//     'params' => $params,
+//     'fn' => $fn,
+//     'fnParams' => $fnParams
+// ]);
 
 try {
     $routes->Get($controller, $params, $fn, $fnParams);
