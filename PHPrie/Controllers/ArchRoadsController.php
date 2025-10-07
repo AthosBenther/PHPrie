@@ -29,7 +29,7 @@ class ArchRoadsController
         if (!file_exists($path)) {
             throw new \Exception("File not found: " . $path);
         }
-        
+
         $content = file_get_contents($path);
 
         //removes invalid characters
@@ -59,8 +59,8 @@ class ArchRoadsController
     private function fixPaths(string $content): string
     {
         $paths = [
-            '/art/shapes/garage_and_dealership/Clutter',
-            '/art/shapes/objects'
+            '/art/shapes/garage_and_dealership/Clutter/',
+            '/art/shapes/objects/'
         ];
 
         foreach ($paths as $path) {
